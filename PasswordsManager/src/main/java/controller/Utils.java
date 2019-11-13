@@ -9,7 +9,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import model.Cuenta;
@@ -38,7 +37,7 @@ public class Utils {
 	public static ArrayList<Usuario> readUsers() {
 		String cadena;
 		Usuario u = null;
-		ArrayList<Usuario> users = new ArrayList<>();
+		ArrayList<Usuario> users = new ArrayList<Usuario>();
 		String datos[];
 
 		try {
