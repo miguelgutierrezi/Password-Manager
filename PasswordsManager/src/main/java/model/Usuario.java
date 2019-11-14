@@ -3,6 +3,7 @@
  */
 package model;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 /**
@@ -14,6 +15,7 @@ public class Usuario {
 	private String user;
 	private String userPass;
 	private ArrayList<Cuenta> cuentas;
+	private LocalDate date;
 
 	/**
 	 * @param user
@@ -24,6 +26,7 @@ public class Usuario {
 		this.user = user;
 		this.userPass = userPass;
 		this.cuentas = new ArrayList<Cuenta>();
+		this.date = LocalDate.now();
 	}
 
 	public String get_id() {
@@ -33,6 +36,7 @@ public class Usuario {
 	public void set_id(String _id) {
 		this._id = _id;
 	}
+
 	/**
 	 * @return the user
 	 */
@@ -73,6 +77,20 @@ public class Usuario {
 	 */
 	public void setCuentas(ArrayList<Cuenta> cuentas) {
 		this.cuentas = cuentas;
+	}
+
+	/**
+	 * @return the date
+	 */
+	public LocalDate getDate() {
+		return date;
+	}
+
+	/**
+	 * @param date the date to set
+	 */
+	public void setDate(LocalDate date) {
+		this.date = date;
 	}
 
 	@Override

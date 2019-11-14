@@ -5,6 +5,8 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -26,6 +28,8 @@ public class LoginView extends JFrame {
 	private JTextField textField;
 	private JPasswordField passwordField;
 	private ArrayList<Usuario> users = new ArrayList<Usuario>();
+	String key = "92AE31A79FEEB2A3"; // llave
+	String iv = "0123456789ABCDEF"; // vector de inicialización
 
 	/**
 	 * Launch the application.
@@ -84,22 +88,38 @@ public class LoginView extends JFrame {
 				users = Utils.leerTodosUsuarios();
 				for (Usuario u : users) {
 					if (u.getUser().equals(textField.getText())) {
-						if (u.getUserPass().equals(Utils.getHash(new String(passwordField.getPassword()), "MD5"))) {
-							System.out.println("Login Exitoso");
-							exito = true;
-							UserDetailView f = null;
-							try {
-								f = new UserDetailView(u);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+						try {
+							if (u.getUserPass()
+									.equals(Utils.encrypt(key, iv, new String(passwordField.getPassword())))) {
+								System.out.println("Login Exitoso");
+								exito = true;
+
+								Long days = ChronoUnit.DAYS.between(LocalDate.now(), u.getDate());
+								System.out.println(days);
+
+								if (days > 30) {
+									CambiarPasswordView f = new CambiarPasswordView(u);
+									f.setVisible(true);
+									setVisible(false);
+								} else {
+									UserDetailView f = null;
+									try {
+										f = new UserDetailView(u);
+									} catch (Exception e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									f.setVisible(true);
+									setVisible(false);
+								}
 							}
-							f.setVisible(true);
-							setVisible(false);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
 					}
 				}
-				
+
 				if (!exito) {
 					System.out.println("Usuario o contraseña incorrectos");
 					JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos");

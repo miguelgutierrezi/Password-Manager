@@ -13,6 +13,7 @@ import java.util.Arrays;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -28,22 +29,8 @@ public class CreateUserView extends JFrame {
 	private JTextField textField;
 	private JPasswordField passwordField;
 	private JPasswordField passwordField_1;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					CreateUserView frame = new CreateUserView();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	String key = "92AE31A79FEEB2A3"; // llave
+	String iv = "0123456789ABCDEF"; // vector de inicialización
 
 	/**
 	 * Create the frame.
@@ -94,13 +81,38 @@ public class CreateUserView extends JFrame {
 
 				String nombre = textField.getText();
 				String pass = "";
-				if (Arrays.equals(passwordField.getPassword(), passwordField_1.getPassword())) {
-					System.out.println("Entra");
-					pass = Utils.getHash(new String(passwordField.getPassword()), "MD5");
-				}
+				if ((passwordField.getPassword().length < 8)
+						|| !Utils.hasNumber(new String(passwordField.getPassword()))
+						|| !Utils.hasLowers(new String(passwordField.getPassword()))
+						|| !Utils.hasCapitals(new String(passwordField.getPassword()))) {
+					System.out.println("Contraseña no valida");
+					JOptionPane.showMessageDialog(null,
+							"Contraseña no valida, debe tener números, mayúsculas y minusculas");
+				} else {
+					if (Arrays.equals(passwordField.getPassword(), passwordField_1.getPassword())) {
+						System.out.println("Entra");
+						try {
+							pass = Utils.encrypt(key, iv, new String(passwordField.getPassword()));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 
-				u = new Usuario(nombre, pass);
-				Utils.crearUsuario(u);
+					u = new Usuario(nombre, pass);
+					Utils.crearUsuario(u);
+
+					UserDetailView f = null;
+					try {
+						f = new UserDetailView(u);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					f.setVisible(true);
+					setVisible(false);
+
+				}
 			}
 		});
 		btnRegistrarse.setBounds(168, 209, 89, 23);

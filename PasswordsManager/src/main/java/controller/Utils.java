@@ -14,18 +14,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
+import static org.apache.commons.codec.binary.Base64.encodeBase64;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.apache.commons.codec.binary.Base64;
+import java.util.Base64;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mongodb.BasicDBObject;
-import com.mongodb.Mongo;
 import com.mongodb.MongoClientURI;
-import com.mongodb.MongoURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 
@@ -38,7 +39,10 @@ import model.Usuario;
  */
 public class Utils {
 
-	private static final byte[] keyValue = "ADBSJHJS12547896".getBytes();
+	// Definición del tipo de algoritmo a utilizar (AES, DES, RSA)
+	private final static String alg = "AES";
+	// Definición del modo de cifrado a utilizar
+	private final static String cI = "AES/CBC/PKCS5Padding";
 
 	public static String getHash(String txt, String hashType) {
 		try {
@@ -55,38 +59,23 @@ public class Utils {
 		return null;
 	}
 
-	public static String encrypt(String strClearText, String strKey) throws Exception {
-		String strData = "";
-
-		try {
-			SecretKeySpec skeyspec = new SecretKeySpec(strKey.getBytes(), "Blowfish");
-			Cipher cipher = Cipher.getInstance("Blowfish");
-			cipher.init(Cipher.ENCRYPT_MODE, skeyspec);
-			byte[] encrypted = cipher.doFinal(strClearText.getBytes());
-			strData = new String(encrypted);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new Exception(e);
-		}
-		return strData;
+	public static String encrypt(String key, String iv, String cleartext) throws Exception {
+		Cipher cipher = Cipher.getInstance(cI);
+		SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes(), alg);
+		IvParameterSpec ivParameterSpec = new IvParameterSpec(iv.getBytes());
+		cipher.init(Cipher.ENCRYPT_MODE, skeySpec, ivParameterSpec);
+		byte[] encrypted = cipher.doFinal(cleartext.getBytes());
+		return new String(encodeBase64(encrypted));
 	}
 
-	public static String decrypt(String strEncrypted, String strKey) throws Exception {
-		String strData = "";
-
-		try {
-			SecretKeySpec skeyspec = new SecretKeySpec(strKey.getBytes(), "Blowfish");
-			Cipher cipher = Cipher.getInstance("Blowfish");
-			cipher.init(Cipher.DECRYPT_MODE, skeyspec);
-			byte[] decrypted = cipher.doFinal(strEncrypted.getBytes());
-			strData = new String(decrypted);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new Exception(e);
-		}
-		return strData;
+	public static String decrypt(String key, String iv, String encrypted) throws Exception {
+		Cipher cipher = Cipher.getInstance(cI);
+		SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes(), alg);
+		IvParameterSpec ivParameterSpec = new IvParameterSpec(iv.getBytes());
+		byte[] enc = decodeBase64(encrypted);
+		cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivParameterSpec);
+		byte[] decrypted = cipher.doFinal(enc);
+		return new String(decrypted);
 	}
 
 	public static ArrayList<Usuario> readUsers() {
@@ -181,5 +170,32 @@ public class Utils {
 		conn.insertObject("Users", d);
 
 		return user;
+	}
+
+	public static Boolean hasNumber(String cadena) {
+		for (int i = 0; i < cadena.length(); i++) {
+			if (Character.isDigit(cadena.charAt(i))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static Boolean hasLowers(String cadena) {
+		for (int i = 0; i < cadena.length(); i++) {
+			if (Character.isLowerCase(cadena.charAt(i))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static Boolean hasCapitals(String cadena) {
+		for (int i = 0; i < cadena.length(); i++) {
+			if (Character.isUpperCase(cadena.charAt(i))) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
