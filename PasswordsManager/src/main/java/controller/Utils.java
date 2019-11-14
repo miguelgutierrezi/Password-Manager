@@ -8,8 +8,22 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.security.Key;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.bson.Document;
+
+import org.apache.commons.codec.binary.Base64;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 
 import model.Cuenta;
 import model.Usuario;
@@ -19,6 +33,9 @@ import model.Usuario;
  *
  */
 public class Utils {
+
+	private static final byte[] keyValue = "ADBSJHJS12547896".getBytes();
+
 	public static String getHash(String txt, String hashType) {
 		try {
 			java.security.MessageDigest md = java.security.MessageDigest.getInstance(hashType);
@@ -32,6 +49,40 @@ public class Utils {
 			System.out.println(e.getMessage());
 		}
 		return null;
+	}
+
+	public static String encryptAES(String valueToEnc) throws Exception {
+
+		Key key = generateKey();
+		Cipher c = Cipher.getInstance("AES");
+		c.init(Cipher.ENCRYPT_MODE, key);
+
+		System.out.println("valueToEnc.getBytes().length " + valueToEnc.getBytes().length);
+		byte[] encValue = c.doFinal(valueToEnc.getBytes());
+		System.out.println("encValue length" + encValue.length);
+		byte[] encryptedByteValue = new Base64().encode(encValue);
+		String encryptedValue = encryptedByteValue.toString();
+		System.out.println("encryptedValue " + encryptedValue);
+
+		return encryptedValue;
+	}
+
+	public static String decryptAES(String encryptedValue) throws Exception {
+		Key key = generateKey();
+		Cipher c = Cipher.getInstance("AES");
+		c.init(Cipher.DECRYPT_MODE, key);
+
+		byte[] enctVal = c.doFinal(encryptedValue.getBytes());
+		System.out.println("enctVal length " + enctVal.length);
+
+		byte[] decordedValue = new Base64().decode(enctVal);
+
+		return decordedValue.toString();
+	}
+
+	private static Key generateKey() throws Exception {
+		Key key = new SecretKeySpec(keyValue, "AES");
+		return key;
 	}
 
 	public static ArrayList<Usuario> readUsers() {
@@ -84,5 +135,38 @@ public class Utils {
 			ex.printStackTrace();
 		}
 		return users;
+	}
+
+	public static ArrayList<Usuario> leerTodosUsuarios() {
+		MongoConnection conn = new MongoConnection();
+		Gson gson = new GsonBuilder().create();
+		System.out.println("ServicioMongo.leerTodosUsuario()");
+		ArrayList<Usuario> users = new ArrayList<Usuario>();
+		MongoCollection<Document> documents = conn.findCollection("Users");
+		try (MongoCursor<Document> cursor = documents.find().iterator()) {
+			while (cursor.hasNext()) {
+				users.add(gson.fromJson(cursor.next().toJson(), Usuario.class));
+			}
+		}
+		return users;
+	}
+
+	public static Usuario crearUsuario(Usuario user) {
+		MongoConnection conn = new MongoConnection();
+		Gson gson = new GsonBuilder().create();
+		System.out.println("ServicioMongo.crearUsuario()");
+		// TODO Auto-generated method stub
+		String temp = gson.toJson(user);
+		Document doc = Document.parse(temp);
+		conn.insertObject("Users", doc);
+		return user;
+	}
+	
+	public static Usuario actualizarUsuario(Usuario user) {
+		System.out.println("ServicioMongo.actualizarUsuario()");
+		MongoConnection conn = new MongoConnection();
+		Gson gson = new GsonBuilder().create();
+		conn.updateObject("Users", user.get_id(), Document.parse(gson.toJson(user)));
+		return user;
 	}
 }

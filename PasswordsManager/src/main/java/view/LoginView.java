@@ -80,16 +80,23 @@ public class LoginView extends JFrame {
 		JButton btnIngresar = new JButton("Ingresar");
 		btnIngresar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				users = Utils.readUsers();
+				Boolean exito = false;
+				users = Utils.leerTodosUsuarios();
 				for (Usuario u : users) {
 					if (u.getUser().equals(textField.getText())) {
 						if (u.getUserPass().equals(Utils.getHash(new String(passwordField.getPassword()), "MD5"))) {
 							System.out.println("Login Exitoso");
+							exito = true;
+							UserDetailView f = new UserDetailView(u);
+							f.setVisible(true);
+							setVisible(false);
 						}
-					} else {
-						System.out.println("Usuario o contraseña incorrectos");
-						JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos");
 					}
+				}
+				
+				if (!exito) {
+					System.out.println("Usuario o contraseña incorrectos");
+					JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos");
 				}
 			}
 		});
@@ -101,6 +108,7 @@ public class LoginView extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				CreateUserView frame = new CreateUserView();
 				frame.setVisible(true);
+				setVisible(false);
 			}
 		});
 		btnCrearUsuario.setBounds(163, 192, 97, 23);

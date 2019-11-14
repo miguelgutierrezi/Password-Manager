@@ -100,19 +100,7 @@ public class CreateUserView extends JFrame {
 				}
 
 				u = new Usuario(nombre, pass);
-				BufferedWriter writer;
-				try {
-					writer = new BufferedWriter(new FileWriter("InfoUsuarios", true));
-					writer.append("\nUsuario\n");
-					writer.append(u.getUser() + ";" + u.getUserPass() + "\n");
-					writer.append("Cuenta");
-					writer.append("#");
-
-					writer.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				Utils.crearUsuario(u);
 			}
 		});
 		btnRegistrarse.setBounds(168, 209, 89, 23);

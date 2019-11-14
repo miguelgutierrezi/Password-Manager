@@ -10,6 +10,7 @@ import java.util.ArrayList;
  *
  */
 public class Usuario {
+	private transient String _id;
 	private String user;
 	private String userPass;
 	private ArrayList<Cuenta> cuentas;
@@ -25,6 +26,13 @@ public class Usuario {
 		this.cuentas = new ArrayList<Cuenta>();
 	}
 
+	public String get_id() {
+		return _id;
+	}
+
+	public void set_id(String _id) {
+		this._id = _id;
+	}
 	/**
 	 * @return the user
 	 */
