@@ -87,7 +87,13 @@ public class LoginView extends JFrame {
 						if (u.getUserPass().equals(Utils.getHash(new String(passwordField.getPassword()), "MD5"))) {
 							System.out.println("Login Exitoso");
 							exito = true;
-							UserDetailView f = new UserDetailView(u);
+							UserDetailView f = null;
+							try {
+								f = new UserDetailView(u);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 							f.setVisible(true);
 							setVisible(false);
 						}

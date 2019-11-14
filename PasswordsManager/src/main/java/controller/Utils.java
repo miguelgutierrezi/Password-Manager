@@ -17,11 +17,15 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.bson.Document;
-
+import org.bson.conversions.Bson;
 import org.apache.commons.codec.binary.Base64;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mongodb.BasicDBObject;
+import com.mongodb.Mongo;
+import com.mongodb.MongoClientURI;
+import com.mongodb.MongoURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 
@@ -51,38 +55,38 @@ public class Utils {
 		return null;
 	}
 
-	public static String encryptAES(String valueToEnc) throws Exception {
+	public static String encrypt(String strClearText, String strKey) throws Exception {
+		String strData = "";
 
-		Key key = generateKey();
-		Cipher c = Cipher.getInstance("AES");
-		c.init(Cipher.ENCRYPT_MODE, key);
+		try {
+			SecretKeySpec skeyspec = new SecretKeySpec(strKey.getBytes(), "Blowfish");
+			Cipher cipher = Cipher.getInstance("Blowfish");
+			cipher.init(Cipher.ENCRYPT_MODE, skeyspec);
+			byte[] encrypted = cipher.doFinal(strClearText.getBytes());
+			strData = new String(encrypted);
 
-		System.out.println("valueToEnc.getBytes().length " + valueToEnc.getBytes().length);
-		byte[] encValue = c.doFinal(valueToEnc.getBytes());
-		System.out.println("encValue length" + encValue.length);
-		byte[] encryptedByteValue = new Base64().encode(encValue);
-		String encryptedValue = encryptedByteValue.toString();
-		System.out.println("encryptedValue " + encryptedValue);
-
-		return encryptedValue;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Exception(e);
+		}
+		return strData;
 	}
 
-	public static String decryptAES(String encryptedValue) throws Exception {
-		Key key = generateKey();
-		Cipher c = Cipher.getInstance("AES");
-		c.init(Cipher.DECRYPT_MODE, key);
+	public static String decrypt(String strEncrypted, String strKey) throws Exception {
+		String strData = "";
 
-		byte[] enctVal = c.doFinal(encryptedValue.getBytes());
-		System.out.println("enctVal length " + enctVal.length);
+		try {
+			SecretKeySpec skeyspec = new SecretKeySpec(strKey.getBytes(), "Blowfish");
+			Cipher cipher = Cipher.getInstance("Blowfish");
+			cipher.init(Cipher.DECRYPT_MODE, skeyspec);
+			byte[] decrypted = cipher.doFinal(strEncrypted.getBytes());
+			strData = new String(decrypted);
 
-		byte[] decordedValue = new Base64().decode(enctVal);
-
-		return decordedValue.toString();
-	}
-
-	private static Key generateKey() throws Exception {
-		Key key = new SecretKeySpec(keyValue, "AES");
-		return key;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Exception(e);
+		}
+		return strData;
 	}
 
 	public static ArrayList<Usuario> readUsers() {
@@ -161,12 +165,21 @@ public class Utils {
 		conn.insertObject("Users", doc);
 		return user;
 	}
-	
+
 	public static Usuario actualizarUsuario(Usuario user) {
 		System.out.println("ServicioMongo.actualizarUsuario()");
 		MongoConnection conn = new MongoConnection();
+		MongoCollection<Document> collection = conn.findCollection("Users");
+
+		BasicDBObject doc = new BasicDBObject();
+		doc.put("user", user.getUser());
+		collection.deleteOne(doc);
+
 		Gson gson = new GsonBuilder().create();
-		conn.updateObject("Users", user.get_id(), Document.parse(gson.toJson(user)));
+		String temp = gson.toJson(user);
+		Document d = Document.parse(temp);
+		conn.insertObject("Users", d);
+
 		return user;
 	}
 }

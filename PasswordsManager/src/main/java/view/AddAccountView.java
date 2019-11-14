@@ -91,11 +91,23 @@ public class AddAccountView extends JFrame {
 					String nombre = textFieldNombre.getText();
 					String url = textFieldURL.getText();
 					String usuario = textFieldUsuario.getText();
-					String password = new String(passwordField.getPassword());
+					String password = "";
+					try {
+						password = Utils.encrypt(new String(passwordField.getPassword()), "Encrypt1234");
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					Cuenta c = new Cuenta(nombre, url, usuario, password, LocalDate.now());
 					u.getCuentas().add(c);
 					Utils.actualizarUsuario(u);
-					UserDetailView f = new UserDetailView(u);
+					UserDetailView f = null;
+					try {
+						f = new UserDetailView(u);
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					f.setVisible(true);
 					setVisible(false);
 				}
